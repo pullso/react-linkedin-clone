@@ -12,7 +12,6 @@ const Login = () => {
   const dispatch = useDispatch()
 
   const register = async () => {
-    // TODO remove console
     if (!name) {
       return alert('Please enter full name')
     }
