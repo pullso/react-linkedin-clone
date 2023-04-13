@@ -5,22 +5,20 @@ import InputOption from "./InputOption";
 import Post from "./Post";
 import {db} from "../firebase";
 import {addDoc, collection, onSnapshot, orderBy, query, serverTimestamp} from "firebase/firestore";
+import {useSelector} from "react-redux";
+import {selectUser} from "../features/userSlice";
 
 const Feed = () => {
   const [input, setInput] = useState('')
   const [posts, setPosts] = useState([])
+  const user = useSelector(selectUser)
+
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(collection(db, "posts"), orderBy("timestamp", "desc")),
-      (querySnapshot) => {
-        setPosts(
-          querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            data: doc.data(),
-          }))
-        );
-      }
-    );
+    const unsubscribe = onSnapshot(query(collection(db, "posts"), orderBy("timestamp", "desc")), (querySnapshot) => {
+      setPosts(querySnapshot.docs.map((doc) => ({
+        id: doc.id, data: doc.data(),
+      })));
+    });
 
     return () => unsubscribe();
   }, [])
@@ -30,10 +28,10 @@ const Feed = () => {
 
     try {
       const docRef = await addDoc(collection(db, "posts"), {
-        name: 'Pavel Dubitskii',
-        description: 'react frontend',
+        name: user.displayName,
+        description: user.email,
         message: input,
-        photoUrl: '',
+        photoURL: user.photoURL || '',
         timestamp: serverTimestamp()
       });
       console.log("Document written with ID: ", docRef.id);
@@ -42,29 +40,26 @@ const Feed = () => {
     }
   }
 
-  return (
-    <div className='feed'>
-      <div className="feed__inputContainer">
-        <div className="feed__input">
-          <Create/>
-          <form>
-            <input value={input} onChange={e => setInput(e.target.value)} type="text"/>
-            <button type='submit' onClick={sendPost}>Send</button>
-          </form>
-        </div>
-        <div className="feed__inputOptions">
-          <InputOption Icon={Image} title='Photo' color='#70b5f9'/>
-          <InputOption Icon={Subscriptions} title='Video' color='lightred'/>
-          <InputOption Icon={EventNote} title='Event' color='lightpink'/>
-          <InputOption Icon={CalendarViewDay} title='Write Article' color='lightblue'/>
-        </div>
+  return (<div className='feed'>
+    <div className="feed__inputContainer">
+      <div className="feed__input">
+        <Create/>
+        <form>
+          <input value={input} onChange={e => setInput(e.target.value)} type="text"/>
+          <button type='submit' onClick={sendPost}>Send</button>
+        </form>
       </div>
-
-      {posts.map(({id, data: {name, description, message, photoUrl}}) => (
-        <Post key={id} name={name} description={description} message={message} photoUrl={photoUrl}/>
-      ))}
+      <div className="feed__inputOptions">
+        <InputOption Icon={Image} title='Photo' color='#70b5f9'/>
+        <InputOption Icon={Subscriptions} title='Video' color='lightred'/>
+        <InputOption Icon={EventNote} title='Event' color='lightpink'/>
+        <InputOption Icon={CalendarViewDay} title='Write Article' color='lightblue'/>
+      </div>
     </div>
-  );
+
+    {posts.map(({id, data: {name, description, message, photoURL}}) => (
+      <Post key={id} name={name} description={description} message={message} photoURL={photoURL}/>))}
+  </div>);
 };
 
 export default Feed;
