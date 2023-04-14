@@ -7,6 +7,7 @@ import {db} from "../firebase";
 import {addDoc, collection, onSnapshot, orderBy, query, serverTimestamp} from "firebase/firestore";
 import {useSelector} from "react-redux";
 import {selectUser} from "../features/userSlice";
+import FlipMove from 'react-flip-move';
 
 const Feed = () => {
   const [input, setInput] = useState('')
@@ -56,9 +57,10 @@ const Feed = () => {
         <InputOption Icon={CalendarViewDay} title='Write Article' color='lightblue'/>
       </div>
     </div>
-
-    {posts.map(({id, data: {name, description, message, photoURL}}) => (
-      <Post key={id} name={name} description={description} message={message} photoURL={photoURL}/>))}
+    <FlipMove>
+      {posts.map(({id, data: {name, description, message, photoURL}}) => (
+        <Post key={id} name={name} description={description} message={message} photoURL={photoURL}/>))}
+    </FlipMove>
   </div>);
 };
 
